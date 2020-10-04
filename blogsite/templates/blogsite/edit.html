@@ -1,0 +1,5 @@
+<form method="POST">
+    {% csrf_token %}
+    Wanna change stuff: <input type="text" name="blog" value="{{ Blog.blog_text }}">
+    <input type="submit" value="edit">
+</form>

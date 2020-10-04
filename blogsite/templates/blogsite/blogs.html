@@ -1,0 +1,29 @@
+{% if user.is_authenticated %}
+    Hello, {{ user.username }}<br>
+    <a href="{% url 'blogsite:update' user.id %}">Edit yourself?</a><br>
+    <a href="{% url 'blogsite:logout' %}">Logout?</a><br>
+    <a href="{% url 'blogsite:create' user.id %}">create?</a><br>
+    <a href="{% url 'blogsite:deleteuser' user.id %}">delete yourself?</a><br>
+{% else %}
+    <a href="{% url 'blogsite:login' %}">Login</a>
+{% endif %}
+
+{% if blogs_list %}
+    <ul>
+    {% for blog in blogs_list %}
+        <li><p>{{ blog }}</p></li>>
+        {% if user.id == blog.user.id %}
+            <a href="{% url 'blogsite:edit' blog.id %}">Edit?</a>
+            <a href="{% url 'blogsite:deleteblog' blog.id %}">Delete?</a>
+        {% endif %}
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No blogs are available</p>
+{% endif %}
+
+<div>
+    {% for message in messages %}
+        <h2>{{ message }}</h2>
+    {% endfor %}
+</div>
