@@ -9,8 +9,32 @@ from .forms import BlogForm, LoginForm, RegisterForm
 def register(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
+        if form.is_valid():
+            username=form.cleaned_data['username']
+            first_name=form.cleaned_data['first_name']
+            last_name=form.cleaned_data['last_name']
+            email=form.cleaned_data['email']
+            password1=form.cleaned_data['password1']
+            password2=form.cleaned_data['password2']
+            if password1 == password2:
+                if User.objects.filter(username=username).exists():
+                    messages.info(request,"Username Taken")
+                    return redirect('/blogsite/register/')
+                elif User.objects.filter(email=email).exists():
+                    messages.info(request,"Email Taken")
+                    return redirect('/blogsite/register/')
+                else:
+                    user = User.objects.create_user(username=username, password=password1, email=email, first_name=first_name, last_name=last_name)
+                    user.save()
+                    messages.info(request,"User created")
+            else:
+                messages.info(request,"Passwords not matching")
+                return redirect('/blogsite/register/')
+
+        return redirect('/blogsite/login/')
     else:
-        return render(request, "blogsite/register.html")
+        form = RegisterForm()
+        return render(request, "blogsite/register.html", {'form' : form})
 
 def login(request):
     if request.method == 'POST':
