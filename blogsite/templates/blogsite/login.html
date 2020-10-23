@@ -1,8 +1,7 @@
 <h1>LOGIN PAGE</h1>
 <form action="" method="POST">
     {% csrf_token %}
-    Username : <input type="text" name="username" placeholder="enter username"><br>
-    Password : <input type="password" name="password" placeholder="enter password"><br>
+    {{ form.as_p }}
     <input type="submit" value="login">
 </form>
 <h4>Don't have an acc?</h4>

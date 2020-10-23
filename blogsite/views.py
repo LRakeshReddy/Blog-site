@@ -38,20 +38,22 @@ def register(request):
 
 def login(request):
     if request.method == 'POST':
-        username=request.POST['username']
-        password=request.POST['password']
-        
-        user=auth.authenticate(username=username, password=password)
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user=auth.authenticate(username=username, password=password)
 
-        if user is not None:
-            auth.login(request,user)
-        else:
-            messages.info(request, "Invalid credentials")
-            return redirect('/blogsite/login/')
+            if user is not None:
+                auth.login(request,user)
+            else:
+                messages.info(request, "Invalid credentials")
+                return redirect('/blogsite/login/')
 
         return redirect('/blogsite/blogs/')
     else:
-        return render(request, 'blogsite/login.html')
+        form = LoginForm()
+        return render(request, 'blogsite/login.html', {'form' : form})
 
 def logout(request):
     auth.logout(request)
@@ -59,12 +61,15 @@ def logout(request):
 
 def create(request, user_id):
     if request.method == 'POST':
-        q=User.objects.get(id=user_id)
-        b=request.POST['blog']
-        q.blog.create(blog_text=b)
-        return redirect('/blogsite/blogs/')
+        form = BlogForm(request.POST)
+        if form.is_valid():
+            q=User.objects.get(id=user_id)
+            b=form.cleaned_data['blog_text']
+            q.blog.create(blog_text=b)
+            return redirect('/blogsite/blogs/')
     else:
-        return render(request, 'blogsite/create.html')
+        form = BlogForm()
+        return render(request, 'blogsite/create.html', {'form' : form})
 
 def update(request, user_id):
     if request.method == 'POST':
@@ -110,12 +115,15 @@ def edit(request, blog_id):
     q=Blog.objects.get(id=blog_id)
     if current_user.id==q.user.id:
         if request.method=="POST":
-            q=Blog.objects.get(id=blog_id)
-            q.blog_text=request.POST['blog']
-            q.save()
+            form = BlogForm(request.POST)
+            if form.is_valid:
+                q=Blog.objects.get(id=blog_id)
+                q.blog_text=form.cleaned_data['blog']
+                q.save()
             return redirect('/blogsite/blogs/')
         else:
-            return render(request, 'blogsite/edit.html', {'Blog':q})
+            form = BlogForm()
+            return render(request, 'blogsite/edit.html', {'form' : form, 'Blog' : q})
     else:
         messages.info(request, "You are not authorised to access this blog")
         return redirect('/blogsite/blogs/')
