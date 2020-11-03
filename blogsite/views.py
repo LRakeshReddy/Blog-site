@@ -5,37 +5,43 @@ from django.views import generic
 from .models import Blog
 from django.urls import reverse
 from .forms import BlogForm, LoginForm, RegisterForm
+from django.views.generic.edit import FormView
+from django.core.exceptions import ValidationError
 
 def register(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            username=form.cleaned_data['username']
-            first_name=form.cleaned_data['first_name']
-            last_name=form.cleaned_data['last_name']
-            email=form.cleaned_data['email']
-            password1=form.cleaned_data['password1']
-            password2=form.cleaned_data['password2']
-            if password1 == password2:
-                if User.objects.filter(username=username).exists():
-                    messages.info(request,"Username Taken")
-                    return redirect('/blogsite/register/')
-                elif User.objects.filter(email=email).exists():
-                    messages.info(request,"Email Taken")
-                    return redirect('/blogsite/register/')
-                else:
-                    user = User.objects.create_user(username=username, password=password1, email=email, first_name=first_name, last_name=last_name)
-                    user.save()
-                    messages.info(request,"User created")
-            else:
-                messages.info(request,"Passwords not matching")
-                return redirect('/blogsite/register/')
-
-        return redirect('/blogsite/login/')
+            form.save()
+            # username=form.cleaned_data['username']
+            # first_name=form.cleaned_data['first_name']
+            # last_name=form.cleaned_data['last_name']
+            # email=form.cleaned_data['email']
+            # password1=form.cleaned_data['password1']
+            # password2=form.cleaned_data['password2']
+            # if password1 == password2:
+            #     if User.objects.filter(username=username).exists():
+            #         messages.info(request,"Username Taken")
+            #         return redirect('/blogsite/register/')
+            #     elif User.objects.filter(email=email).exists():
+            #         messages.info(request,"Email Taken")
+            #         return redirect('/blogsite/register/')
+            #     else:
+            #         user = User.objects.create_user(username=username, password=password1, email=email, first_name=first_name, last_name=last_name)
+            #         user.save()
+            #         messages.info(request,"User created")
+            # else:
+            #     messages.info(request,"Passwords not matching")
+            #     return redirect('/blogsite/register/')
+            return redirect('/blogsite/login/')
+        else:
+            messages.info(request,"hi")
+            return redirect('/blogsite/register/')
     else:
         form = RegisterForm()
         return render(request, "blogsite/register.html", {'form' : form})
 
+'''
 def login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -54,6 +60,29 @@ def login(request):
     else:
         form = LoginForm()
         return render(request, 'blogsite/login.html', {'form' : form})
+'''
+
+class LoginView(FormView):
+    template_name = 'blogsite/login.html'
+    form_class = LoginForm
+    success_url = '/blogsite/blogs/'
+    
+    # def post(self, request):
+    #     username=form.cleaned_data['username']
+    #     password=form.cleaned_data['password']
+    #     user=auth.authenticate(username=username, password=password)
+    
+    def form_valid(self, form):
+        username=form.cleaned_data['username']
+        password=form.cleaned_data['password']
+        user=auth.authenticate(username=username, password=password)
+        if user is None:
+            #raise User.DoesNotExist()
+            messages.info(self.request, "Invalid credentials")
+            return self.form_invalid(form)
+        else:
+            auth.login(self.request, user)
+        return super().form_valid(form)
 
 def logout(request):
     auth.logout(request)
